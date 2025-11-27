@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Riddles</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            direction: ltr;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            background: #0b0c2a; 
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .overlay {
+            background: rgba(0,0,0,0.7);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .quiz-container {
+            max-width: 500px;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px gold;
+            color: #FFD700;
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .question {
+            font-size: 1.6em;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        .option {
+            display: block;
+            width: 100%;
+            margin: 12px 0;
+            padding: 14px;
+            background: #004e92;
+            color: white;
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            text-align: left;
+            position: relative;
+        }
+        .option::before {
+            content: attr(data-label);
+            font-weight: bold;
+            margin-right: 10px;
+            color: gold;
+        }
+        .option:hover {
+            background: #002f5f;
+            transform: scale(1.03);
+        }
+        .option.correct {
+            background: #228B22;
+            box-shadow: 0 0 15px #00FF00;
+            color: white;
+        }
+        .option.wrong {
+            background: #B22222;
+            box-shadow: 0 0 15px #FF0000;
+            color: white;
+        }
+        .feedback {
+            font-weight: bold;
+            margin: 15px 0;
+            font-size: 1.2em;
+        }
+        .score {
+            margin-top: 10px;
+            font-size: 1em;
+            color: #ccc;
+        }
+        .music-control {
+            margin-bottom: 12px;
+        }
+        button.music-btn, button.restart-btn {
+            margin: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            background: #333;
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        button.music-btn:hover, button.restart-btn:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="quiz-container">
+        <div class="music-control">
+            <button class="music-btn" onclick="toggleMusic()">🎵 Play/Stop Music</button>
+        </div>
+        <div class="question" id="question"></div>
+        <div id="options"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="score" id="score"></div>
+        <button class="restart-btn" id="restartBtn" style="display:none;" onclick="restartQuiz()">
+            🔄 Restart Quiz
+        </button>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="cheer-sound">
+        <source src="https://www.soundjay.com/human/cheering-01.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="wrong-sound">
+        <source src="https://www.soundjay.com/button/fail-buzzer-01.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const questions = [
+ {
+  question: "What has keys but can't open locks?",
+  options: [
+    { text: "A piano", correct: true },
+    { text: "A map", correct: false, feedback: "Incorrect. A map doesn’t have actual keys." },
+    { text: "A door", correct: false, feedback: "Incorrect. Doors open *with* keys." },
+    { text: "A treasure chest", correct: false, feedback: "Incorrect. A treasure chest can be locked." }
+  ]
+},
+{
+  question: "I’m tall when I’m young and short when I’m old. What am I?",
+  options: [
+    { text: "A tree", correct: false, feedback: "Incorrect. Trees get taller as they grow." },
+    { text: "A candle", correct: true },
+    { text: "A person", correct: false, feedback: "Incorrect. People don't shrink that quickly!" },
+    { text: "A pencil", correct: false, feedback: "Incorrect. A pencil gets shorter, but not from age." }
+  ]
+},
+{
+  question: "What has hands but can’t clap?",
+  options: [
+    { text: "A dog", correct: false, feedback: "Incorrect. Dogs don’t have hands." },
+    { text: "A monkey", correct: false, feedback: "Incorrect. Monkeys *can* clap." },
+    { text: "A clock", correct: true },
+    { text: "A flower", correct: false, feedback: "Incorrect. Flowers don’t have hands." }
+  ]
+},
+{
+  question: "What runs but never walks?",
+  options: [
+    { text: "Water", correct: true },
+    { text: "A car", correct: false, feedback: "Incorrect. Cars don’t run unless driven." },
+    { text: "A cheetah", correct: false, feedback: "Incorrect. Cheetahs both run *and* walk." },
+    { text: "A child", correct: false, feedback: "Incorrect. Children walk too." }
+  ]
+},
+{
+  question: "What has a face and two hands but no arms or legs?",
+  options: [
+    
+    { text: "A chair", correct: false, feedback: "Incorrect. Chairs do not have faces or hands." },
+    { text: "A book", correct: false, feedback: "Incorrect. Books have pages, not hands." },
+    { text: "A snowman", correct: false, feedback: "Incorrect. Snowmen can have arms and legs." },
+    { text: "A clock", correct: true }
+  ]
+},
+{
+  question: "What gets wetter the more it dries?",
+  options: [ 
+    { text: "A sponge", correct: false, feedback: "Incorrect. Sponges get wet, but they don’t dry other things." },
+    { text: "Rain", correct: false, feedback: "Incorrect. Rain makes things wet, not dry." },
+    { text: "A towel", correct: true },
+    { text: "A shirt", correct: false, feedback: "Incorrect. A shirt doesn't dry anything." }
+  ]
+},
+{
+  question: "What has to be broken before you can use it?",
+  options: [
+    { text: "A cookie", correct: false, feedback: "Incorrect. Cookies don’t need to be broken to eat." },
+    { text: "An egg", correct: true },
+    { text: "A stick", correct: false, feedback: "Incorrect. Sticks aren’t ‘used’ by breaking them." },
+    { text: "A toy", correct: false, feedback: "Incorrect. If you break a toy, you can’t use it!" }
+  ]
+},
+{
+  question: "I’m full of holes but I still hold water. What am I?",
+  options: [
+    { text: "A sponge", correct: true },
+    { text: "A bucket", correct: false, feedback: "Incorrect. A bucket shouldn’t have holes!" },
+    { text: "A bowl", correct: false, feedback: "Incorrect. A bowl wouldn’t hold water with holes." },
+    { text: "A net", correct: false, feedback: "Incorrect. Nets let water through." }
+  ]
+},
+{
+  question: "What question can you never answer 'yes' to?",
+  options: [
+     
+    { text: "Do you like cake?", correct: false, feedback: "Incorrect. You can say yes if you like cake." },
+    { text: "Is it raining?", correct: false, feedback: "Incorrect. You can definitely answer that." },
+    { text: "Are you older?", correct: false, feedback: "Incorrect. That question can be answered." },
+    { text: "Are you asleep?", correct: true } 
+  ]
+},
+{
+  question: "What goes up but never comes down?",
+  options: [
+    { text: "Your age", correct: true },
+    { text: "A balloon", correct: false, feedback: "Incorrect. Balloons eventually come down." },
+    { text: "Smoke", correct: false, feedback: "Incorrect. Smoke rises but also falls." },
+    { text: "A rocket", correct: false, feedback: "Incorrect. Rockets come down too!" }
+  ]
+},
+{
+  question: "What has one eye but can’t see?",
+  options: [
+    { text: "A potato", correct: false, feedback: "Incorrect. Potatoes can have many 'eyes' but this riddle has one." },
+    { text: "A needle", correct: true },
+    { text: "A hurricane", correct: false, feedback: "Incorrect. Hurricanes have eyes but can’t see, but the classic answer is 'needle'." },
+    { text: "A storm", correct: false, feedback: "Incorrect. Storms don't literally have eyes." }
+  ]
+},
+{
+  question: "What has many teeth but can’t bite?",
+  options: [
+    { text: "A zipper", correct: false, feedback: "Incorrect. Zippers have teeth but aren't the classic answer." },
+    { text: "A saw", correct: false, feedback: "Incorrect. Saws *do* bite!" },
+    { text: "A comb", correct: true },
+    { text: "A shark", correct: false, feedback: "Incorrect. Sharks definitely bite!" }
+  ]
+},
+{
+  question: "What building has the most stories?",
+  options: [
+    { text: "A library", correct: true },
+    { text: "A skyscraper", correct: false, feedback: "Incorrect. Skyscrapers have floors, not stories." },
+    { text: "A school", correct: false, feedback: "Incorrect. Schools don’t hold stories." },
+    { text: "A bookstore", correct: false, feedback: "Incorrect. Bookstores sell books but the riddle is about 'stories'." }
+  ]
+},
+{
+  question: "What has a neck but no head?",
+  options: [
+    { text: "A giraffe", correct: false, feedback: "Incorrect. Giraffes definitely have heads." },
+    { text: "A bottle", correct: true },
+    { text: "A sweater", correct: false, feedback: "Incorrect. Sweaters have collars, not necks." },
+    { text: "A shirt", correct: false, feedback: "Incorrect. Shirts also don’t fit the riddle." }
+  ]
+},
+{
+  question: "What is always in front of you but can’t be seen?",
+  options: [
+    { text: "The future", correct: true },
+    { text: "The air", correct: false, feedback: "Incorrect. Air can often be seen or felt." },
+    { text: "Your nose", correct: false, feedback: "Incorrect. Your nose can be seen if you look down." },
+    { text: "Tomorrow's newspaper", correct: false, feedback: "Incorrect. That actually exists physically." }
+  ]
+},
+{
+  question: "What has legs but doesn’t walk?",
+  options: [ 
+    { text: "A snake", correct: false, feedback: "Incorrect. Snakes don’t have legs." },
+    { text: "A chair", correct: false, feedback: "Incorrect. Chairs don’t walk either, but not the classic answer." },
+    { text: "A cloud", correct: false, feedback: "Incorrect. Clouds float but don't have legs." },
+    { text: "A table", correct: true },
+  ]
+},
+{
+  question: "Which month has 28 days?",
+  options: [
+    { text: "February", correct: false, feedback: "Incorrect. February *always* has 28, but others do too." },
+    { text: "February in a leap year", correct: false, feedback: "Incorrect. That's 29 days." },
+    { text: "All of them", correct: true },
+    { text: "January", correct: false, feedback: "Incorrect. It has 31." }
+  ]
+},
+{
+  question: "What can you catch but not throw?",
+  options: [ 
+    { text: "A ball", correct: false, feedback: "Incorrect. Balls can be thrown." },
+    { text: "A cold", correct: true },
+    { text: "A fish", correct: false, feedback: "Incorrect. Fish can be caught and thrown." },
+    { text: "A frisbee", correct: false, feedback: "Incorrect. Frisbees are thrown all the time!" }
+  ]
+},
+{
+  question: "What gets bigger the more you take away?",
+  options: [
+    { text: "A cookie", correct: false, feedback: "Incorrect. Cookies get smaller when you take pieces away." },
+    { text: "A shadow", correct: false, feedback: "Incorrect. Shadows depend on light, not pieces removed." },
+    { text: "A mountain", correct: false, feedback: "Incorrect. Removing pieces shrinks a mountain." },
+      { text: "A hole", correct: true }
+  ]
+},
+{
+  question: "What begins with T, ends with T, and has T in it?",
+  options: [ 
+    { text: "A tent", correct: false, feedback: "Incorrect. Only begins with T." },
+    { text: "A tablet", correct: false, feedback: "Incorrect. Doesn't end with T." },
+    { text: "A teapot", correct: true },
+    { text: "A ticket", correct: false, feedback: "Incorrect. Also doesn’t contain T in the middle." }
+  ]
+},
+{
+    question: "What can you put in a bucket to make it lighter?",
+    "options": [
+      { "text": "A hole", "correct": true },
+      { "text": "A flashlight", "correct": false, "feedback": "Incorrect. That only lights it up, not lightens it." },
+      { "text": "A balloon", "correct": false, "feedback": "Incorrect. Balloons don’t make buckets lighter." },
+      { "text": "A feather", "correct": false, "feedback": "Incorrect. Feathers are light but don’t change bucket weight." }
+    ]
+  },
+  {
+    question: "What kind of cup can’t hold water?",
+    "options": [ 
+      { "text": "A plastic cup", "correct": false, "feedback": "Incorrect. That holds water fine." },
+      { "text": "A hiccup", "correct": true },
+      { "text": "A teacup", "correct": false, "feedback": "Incorrect. Teacups hold liquid." },
+      { "text": "A paper cup", "correct": false, "feedback": "Incorrect. It holds water for a bit!" }
+    ]
+  },
+  {
+    question: "What gets sharper the more you use it?",
+    "options": [ 
+      { "text": "A knife", "correct": false, "feedback": "Incorrect. Knives get dull with use." },
+      { "text": "A pencil", "correct": false, "feedback": "Incorrect. Pencils get shorter and duller." },
+      { "text": "Your brain", "correct": true },
+      { "text": "A saw", "correct": false, "feedback": "Incorrect. Saws also get dull over time." }
+    ]
+  },
+  {
+    question: "What has a mouth but never eats?",
+    "options": [
+      { "text": "A river", "correct": true },
+      { "text": "A dog bowl", "correct": false, "feedback": "Incorrect. Bowls don’t have mouths." },
+      { "text": "A cave", "correct": false, "feedback": "Incorrect. Caves have mouths but not this answer." },
+      { "text": "A mask", "correct": false, "feedback": "Incorrect. Masks have mouths drawn, not real ones." }
+    ]
+  },
+  {
+     
+    question: "What can you hear but not see or touch?",
+    "options": [
+      { "text": "Your voice", "correct": true },
+      { "text": "A cloud", "correct": false, "feedback": "Incorrect. Clouds can be seen." },
+      { "text": "A feather", "correct": false, "feedback": "Incorrect. Feathers can be touched." },
+      { "text": "The wind", "correct": false, "feedback": "Incorrect. You can hear wind, but the classic answer is voice." }
+    ]
+  },
+  {
+    question: "What has roots that nobody sees and is taller than trees?",
+    "options": [ 
+      { "text": "A turnip", "correct": false, "feedback": "Incorrect. Turnips have real roots underground." },
+      { "text": "A skyscraper", "correct": false, "feedback": "Incorrect. Skyscrapers have foundations, not roots." },
+      { "text": "A carrot", "correct": false, "feedback": "Incorrect. Carrots are small!" },
+      { "text": "A mountain", "correct": true }
+    ]
+  },
+  {
+    question: "What has a spine but no bones?",
+    "options": [ 
+      { "text": "A fish", "correct": false, "feedback": "Incorrect. Fish have real spines." },
+      { "text": "A book", "correct": true },
+      { "text": "A robot", "correct": false, "feedback": "Incorrect. Robots may have frames, not spines." },
+      { "text": "A tree", "correct": false, "feedback": "Incorrect. Trees have trunks, not spines." }
+    ]
+  },
+  {
+    question: "What spends all day in a bed but never sleeps?",
+    "options": [
+      { "text": "A flower", "correct": true },
+      { "text": "A cat", "correct": false, "feedback": "Incorrect. Cats sleep A LOT." },
+      { "text": "Shaima", "correct": false, "feedback": "Incorrect. If she is in bed, she will be sleeping." },
+      { "text": "Jabbar", "correct": false, "feedback": "Incorrect. If he is in bed, he will be on roblox." }
+    ]
+  },
+  {
+    question: "What can fill a room but takes up no space?",
+    "options": [ 
+      { "text": "Air", "correct": false, "feedback": "Incorrect. Air takes up space." },
+      { "text": "Water vapor", "correct": false, "feedback": "Incorrect. Vapor is still matter." },
+      { "text": "Light", "correct": true },
+      { "text": "Confetti", "correct": false, "feedback": "Incorrect. Confetti definitely takes up space!" }
+    ]
+  },
+  {
+    question: "What has wings but can't fly?",
+    "options": [
+      { "text": "A penguin", "correct": false, "feedback": "Incorrect. Penguins have wings but the classic answer is a bicycle." },
+      { "text": "A bicycle", "correct": true },
+      { "text": "A chicken", "correct": false, "feedback": "Incorrect. Chickens can fly a little." },
+      { "text": "A statue", "correct": false, "feedback": "Incorrect. Statues don’t have wings usually." }
+    ]
+  },
+  {
+    question: "What goes through cities and fields but never moves?",
+    "options": [
+      { "text": "A road", "correct": true },
+      { "text": "A train", "correct": false, "feedback": "Incorrect. Trains move a lot." },
+      { "text": "A bird", "correct": false, "feedback": "Incorrect. Birds fly through fields." },
+      { "text": "A breeze", "correct": false, "feedback": "Incorrect. Breezes move constantly." },
+      { "text": "A road", "correct": true } 
+    ]
+  },
+  {
+    question: "What is full of holes but still holds water?",
+    "options": [ 
+      { "text": "A strainer", "correct": false, "feedback": "Incorrect. Strainers don’t hold water!" },
+      { "text": "A bucket", "correct": false, "feedback": "Incorrect. Buckets shouldn’t have holes." },
+      { "text": "A sponge", "correct": true },
+      { "text": "A cup", "correct": false, "feedback": "Incorrect. Cups hold water because they have no holes." }
+    ]
+  },
+  {
+    question: "What kind of key opens a banana?",
+    "options": [ 
+      { "text": "A skeleton key", "correct": false, "feedback": "Incorrect. Skeleton keys open locks." },
+      { "text": "A monkey", "correct": true },
+      { "text": "A turkey", "correct": false, "feedback": "Incorrect. Turkeys eat corn, not bananas." },
+      { "text": "A house key", "correct": false, "feedback": "Incorrect. House keys don’t peel bananas." }
+    ]
+  },
+  {
+    question: "What has stripes and goes 'Moo'?",
+    "options": [
+      { "text": "A cow in pajamas", "correct": false, "feedback": "Incorrect. Funny, but not the riddle." },
+      { "text": "A zebra pretending to be a cow", "correct": true },
+      { "text": "A tiger", "correct": false, "feedback": "Incorrect. Tigers roar, not moo." },
+      { "text": "A skunk", "correct": false, "feedback": "Incorrect. Skunks don’t moo." }
+    ]
+  },
+  {
+    question: "What kind of dog loves to take a bath?",
+    "options": [
+      { "text": "A shampoo-dle", "correct": true },
+      { "text": "A bulldog", "correct": false, "feedback": "Incorrect. Bulldogs don’t love baths especially." },
+      { "text": "A hot dog", "correct": false, "feedback": "Incorrect. Hot dogs don’t take baths." },
+      { "text": "A pug", "correct": false, "feedback": "Incorrect. Cute, but not the answer." }
+    ]
+  },
+  {
+    question: "What do elves do after school?",
+    "options": [
+      { "text": "Gnome-work", "correct": true },
+      { "text": "Elfercise", "correct": false, "feedback": "Incorrect. Cute but not the answer." },
+      { "text": "Magic class", "correct": false, "feedback": "Incorrect. Not the pun here." },
+      { "text": "Tree climbing", "correct": false, "feedback": "Incorrect. Not the wordplay." }
+    ]
+  },
+  {
+    question: "What do you call a dinosaur wearing a cowboy hat?",
+    "options": [ 
+      { "text": "A fancy fossil", "correct": false, "feedback": "Incorrect. Fossils don’t wear hats." },
+      { "text": "Tyranno-saurus Tex", "correct": true },
+      { "text": "Cowboy-saurus", "correct": false, "feedback": "Incorrect. Fun but not the riddle." },
+      { "text": "Dino-rodeo", "correct": false, "feedback": "Incorrect. Creative guess!" }
+    ]
+  },
+  {
+    question: "Why did the grape stop in the middle of the road?",
+    "options": [
+      { "text": "It ran out of juice", "correct": true },
+      { "text": "It got lost", "correct": false, "feedback": "Incorrect. Grapes don’t worry about directions." },
+      { "text": "It rolled too far", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It saw a car", "correct": false, "feedback": "Incorrect. Grapes don’t see." }
+    ]
+  },
+  {
+    question: "Why did the banana get lonely?",
+    "options": [ 
+      { "text": "It got peeled", "correct": false, "feedback": "Incorrect. Peeling isn’t the joke." },
+      { "text": "It was mushy", "correct": false, "feedback": "Incorrect. Mushiness isn’t loneliness." },
+      { "text": "It split", "correct": true },
+      { "text": "It slipped away", "correct": false, "feedback": "Incorrect. Not the pun." }
+    ]
+  },
+  {
+    question: "Why couldn't the pony sing?",
+    "options": [
+      
+      { "text": "It forgot the lyrics", "correct": false, "feedback": "Incorrect. That’s not the joke." },
+      { "text": "It was too shy", "correct": false, "feedback": "Incorrect. Ponies can’t be shy about singing." },
+      { "text": "It was tired", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "Because it was a little hoarse", "correct": true } 
+    ]
+  },
+  {
+    question: "Why was the calendar afraid?",
+    "options": [ 
+      { "text": "It lost a page", "correct": false, "feedback": "Incorrect. Not the riddle." },
+      { "text": "It was old", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "Its days were numbered", "correct": true },
+      { "text": "It had too many dates", "correct": false, "feedback": "Incorrect. Funny, but not the answer." }
+    ]
+  },
+  {
+    question: "Why did the picture go to jail?",
+    "options": [
+      { "text": "Because it was framed", "correct": true },
+      { "text": "It broke the wall", "correct": false, "feedback": "Incorrect. Pictures don’t do that." },
+      { "text": "It lied", "correct": false, "feedback": "Incorrect. Pictures don’t talk." },
+      { "text": "It was crooked", "correct": false, "feedback": "Incorrect. That’s not the joke." }
+    ]
+  },
+  {
+    question: "Why don't fish do well in school?",
+    "options": [ 
+      { "text": "They can’t write", "correct": false, "feedback": "Incorrect. True but not the pun!" },
+      { "text": "Because they are always swimming below sea level", "correct": true },
+      { "text": "They’re too slippery", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "They forget homework", "correct": false, "feedback": "Incorrect. Fish don’t have homework." }
+    ]
+  },
+  {
+    question: "Why did the broom get promoted?",
+    "options": [
+      { "text": "It swept the competition", "correct": true },
+      { "text": "It worked hard", "correct": false, "feedback": "Incorrect. True, but not the joke." },
+      { "text": "It was tidy", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It impressed the mop", "correct": false, "feedback": "Incorrect. Funny, but not the riddle." }
+    ]
+  },
+  {
+    question: "Why don’t teddy bears ever order dessert?",
+    "options": [ 
+      { "text": "They don’t have money", "correct": false, "feedback": "Incorrect. Bears don’t use money." },
+      { "text": "They’re on a diet", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "They fall asleep", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "They’re already stuffed", "correct": true }
+    ]
+  },
+  {
+    question: "Why couldn’t the pirate play cards?",
+    "options": [ 
+      { "text": "He lost the treasure", "correct": false, "feedback": "Incorrect. Not the pun." },
+     { "text": "Because he was sitting on the deck", "correct": true },
+      { "text": "He only had gold coins", "correct": false, "feedback": "Incorrect. Not related to cards." },
+      { "text": "He wore an eyepatch", "correct": false, "feedback": "Incorrect. That doesn’t stop card playing." }
+    ]
+  },
+  {
+    question: "Why did the clock get in trouble at school?",
+    "options": [
+      { "text": "It tocked back to the teacher", "correct": true },
+      { "text": "It was slow", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It was loud", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "It was late", "correct": false, "feedback": "Incorrect. Not the pun." }
+    ]
+  },
+  {
+    question: "Why did the cookie cry?",
+    "options": [ 
+      { "text": "It got dunked", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It was broken", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "Because its mom was a wafer too long", "correct": true },
+      { "text": "It was stale", "correct": false, "feedback": "Incorrect. Wrong answer." }
+    ]
+  },
+  {
+    question: "Why did the pencil cross the road?",
+    "options": [
+      { "text": "To get to the other side of the paper", "correct": true },
+      { "text": "It needed sharpening", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It followed the pen", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It rolled away", "correct": false, "feedback": "Incorrect. Wrong punchline." }
+    ]
+  },
+  {
+    question: "Why was the cat afraid of the tree?",
+    "options": [
+      { "text": "Because of its bark", "correct": true },
+      { "text": "It was tall", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It was windy", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It couldn’t climb", "correct": false, "feedback": "Incorrect. Cats climb well!" },
+      { "text": "Because of its bark", "correct": true }
+    ]
+  },
+  {
+     
+    question: "Why did the lightbulb fail school?",
+    "options": [ 
+      { "text": "It flickered too much", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It broke", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "It wasn’t too bright", "correct": true },
+      { "text": "It didn’t shine", "correct": false, "feedback": "Incorrect. Not the riddle." }
+    ]
+  },
+  {
+    question: "Why did the music teacher need a ladder?",
+    "options": [ 
+      { "text": "To fix the lights", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "To see the students", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "To reach the high notes", "correct": true },
+      { "text": "Because she dropped something", "correct": false, "feedback": "Incorrect. Wrong answer." }
+    ]
+  },
+  {
+    question: "Why don’t mountains get cold?",
+    "options": [
+      { "text": "They wear snowcaps", "correct": true },
+      { "text": "They’re too tall", "correct": false, "feedback": "Incorrect. Height isn’t warmth." },
+      { "text": "They face the sun", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "They’re strong", "correct": false, "feedback": "Incorrect. Not the riddle." }
+    ]
+  },
+  {
+    question: "Why did the frog take the bus?",
+    "options": [
+      { "text": "His car got toad", "correct": true },
+      { "text": "He was hopping late", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "He lost his keys", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "He wanted to ride", "correct": false, "feedback": "Incorrect. Not the punchline." }
+    ]
+  },
+  {
+     
+    question: "Why did the drum take a nap?",
+    "options": [ 
+      { "text": "It broke", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It was beat", "correct": true },
+      { "text": "It was loud", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It couldn’t keep time", "correct": false, "feedback": "Incorrect. Wrong punchline." }
+    ]
+  },
+  {
+    question: "Why did the chicken cross the playground?",
+    "options": [
+      { "text": "To get to the other slide", "correct": true },
+      { "text": "To chase a ball", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "To find friends", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "To get a snack", "correct": false, "feedback": "Incorrect. Not the punchline." }
+    ]
+  },
+  {
+    question: "Why did the robot go on vacation?",
+    "options": [
+      { "text": "It needed to recharge", "correct": true },
+      { "text": "It got rusty", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It glitched", "correct": false, "feedback": "Incorrect. Not the punchline." },
+      { "text": "It was bored", "correct": false, "feedback": "Incorrect. Robots don’t get bored!" }
+    ]
+  },
+  {
+    question: "Why did the student stare at the juice box?",
+    "options": [
+      { "text": "He was thirsty", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "He wanted the flavor", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It spilled", "correct": false, "feedback": "Incorrect. Wrong answer." },
+      { "text": "Because it said 'concentrate'", "correct": true }
+    ]
+  },
+  {
+  question: "What has hands but can’t clap?",
+  options: [
+    { text: "A clock", correct: true },
+    { text: "A dog", correct: false, feedback: "Incorrect. Dogs don’t have hands." },
+    { text: "A monkey", correct: false, feedback: "Incorrect. Monkeys *can* clap." },
+    { text: "A flower", correct: false, feedback: "Incorrect. Flowers don’t have hands." }
+  ]
+},
+{
+  question: "What runs but never walks?",
+  options: [ 
+    { text: "A car", correct: false, feedback: "Incorrect. Cars don’t run unless driven." },
+    { text: "A cheetah", correct: false, feedback: "Incorrect. Cheetahs both run *and* walk." },
+    { text: "Nose", correct: true },
+    { text: "A child", correct: false, feedback: "Incorrect. Children walk too." }
+  ]
+},
+{
+  question: "What has a face and two hands but no arms or legs?",
+  options: [ 
+    { text: "A chair", correct: false, feedback: "Incorrect. Chairs do not have faces or hands." },
+    { text: "A clock", correct: true },
+    { text: "A book", correct: false, feedback: "Incorrect. Books have pages, not hands." },
+    { text: "A snowman", correct: false, feedback: "Incorrect. Snowmen can have arms and legs." }
+  ]
+},
+{
+  question: "What gets wetter the more it dries?",
+  options: [
+    { text: "A towel", correct: true },
+    { text: "Ice Cubes", correct: false, feedback: "Incorrect. Ice Cubes get wet, but they don’t dry other things." },
+    { text: "Rain", correct: false, feedback: "Incorrect. Rain makes things wet, not dry." },
+    { text: "A shirt", correct: false, feedback: "Incorrect. A shirt doesn't dry anything." }
+  ]
+},
+{
+  
+  question: "I’m full of holes but I still hold water. What am I?",
+  options: [
+    { text: "A sponge", correct: true },
+    { text: "A bucket", correct: false, feedback: "Incorrect. A bucket shouldn’t have holes!" },
+    { text: "A bowl", correct: false, feedback: "Incorrect. A bowl wouldn’t hold water with holes." },
+    { text: "A net", correct: false, feedback: "Incorrect. Nets let water through." }
+  ]
+},
+{
+  question: "What question can you never answer 'yes' to?",
+  options: [
+    { text: "Are you asleep?", correct: true },
+    { text: "Do you like cake?", correct: false, feedback: "Incorrect. You can say yes if you like cake." },
+    { text: "Is it raining?", correct: false, feedback: "Incorrect. You can definitely answer that." },
+    { text: "Are you older?", correct: false, feedback: "Incorrect. That question can be answered." }
+  ]
+},
+{
+  question: "What goes up but never comes down?",
+  options: [
+    { text: "Your age", correct: true },
+    { text: "A balloon", correct: false, feedback: "Incorrect. Balloons eventually come down." },
+    { text: "Smoke", correct: false, feedback: "Incorrect. Smoke rises but also falls." },
+    { text: "A rocket", correct: false, feedback: "Incorrect. Rockets come down too!" }
+  ]
+},
+{
+  question: "What has one eye but can’t see?",
+  options: [
+    { text: "A needle", correct: true },
+    { text: "A potato", correct: false, feedback: "Incorrect. Potatoes can have many 'eyes' but this riddle has one." },
+    { text: "A hurricane", correct: false, feedback: "Incorrect. Hurricanes have eyes but can’t see, but the classic answer is 'needle'." },
+    { text: "A storm", correct: false, feedback: "Incorrect. Storms don't literally have eyes." }
+  ]
+},
+{
+  question: "What has many teeth but can’t bite?",
+  options: [
+    { text: "A comb", correct: true },
+    { text: "A zipper", correct: false, feedback: "Incorrect. Zippers have teeth but aren't the classic answer." },
+    { text: "A saw", correct: false, feedback: "Incorrect. Saws *do* bite!" },
+    { text: "A shark", correct: false, feedback: "Incorrect. Sharks definitely bite!" }
+  ]
+},
+{
+  question: "What building has the most stories?",
+  options: [
+    { text: "A library", correct: true },
+    { text: "A skyscraper", correct: false, feedback: "Incorrect. Skyscrapers have floors, not stories." },
+    { text: "A school", correct: false, feedback: "Incorrect. Schools don’t hold stories." },
+    { text: "A bookstore", correct: false, feedback: "Incorrect. Bookstores sell books but the riddle is about 'stories'." }
+  ]
+},
+{
+  question: "What has a neck but no head?",
+  options: [
+    { text: "A bottle", correct: true },
+    { text: "A giraffe", correct: false, feedback: "Incorrect. Giraffes definitely have heads." },
+    { text: "A sweater", correct: false, feedback: "Incorrect. Sweaters have collars, not necks." },
+    { text: "A shirt", correct: false, feedback: "Incorrect. Shirts also don’t fit the riddle." }
+  ]
+},
+{
+  question: "What is always in front of you but can’t be seen?",
+  options: [
+    { text: "The future", correct: true },
+    { text: "The air", correct: false, feedback: "Incorrect. Air can often be seen or felt." },
+    { text: "Your nose", correct: false, feedback: "Incorrect. Your nose can be seen if you look down." },
+    { text: "Tomorrow's newspaper", correct: false, feedback: "Incorrect. That actually exists physically." }
+  ]
+},
+{
+  question: "What has legs but doesn’t walk?",
+  options: [
+    { text: "A table", correct: true },
+    { text: "A snake", correct: false, feedback: "Incorrect. Snakes don’t have legs." },
+    { text: "A chair", correct: false, feedback: "Incorrect. Chairs don’t walk either, but not the classic answer." },
+    { text: "A cloud", correct: false, feedback: "Incorrect. Clouds float but don't have legs." }
+  ]
+},
+{
+  question: "Which month has 28 days?",
+  options: [
+    { text: "All of them", correct: true },
+    { text: "February", correct: false, feedback: "Incorrect. February *always* has 28, but others do too." },
+    { text: "February in a leap year", correct: false, feedback: "Incorrect. That's 29 days." },
+    { text: "January", correct: false, feedback: "Incorrect. It has 31." }
+  ]
+},
+{
+  question: "What can you catch but not throw?",
+  options: [
+    { text: "A cold", correct: true },
+    { text: "A ball", correct: false, feedback: "Incorrect. Balls can be thrown." },
+    { text: "A fish", correct: false, feedback: "Incorrect. Fish can be caught and thrown." },
+    { text: "A frisbee", correct: false, feedback: "Incorrect. Frisbees are thrown all the time!" }
+  ]
+},
+{
+  question: "What gets bigger the more you take away?",
+  options: [
+    { text: "A hole", correct: true },
+    { text: "A cookie", correct: false, feedback: "Incorrect. Cookies get smaller when you take pieces away." },
+    { text: "A shadow", correct: false, feedback: "Incorrect. Shadows depend on light, not pieces removed." },
+    { text: "A mountain", correct: false, feedback: "Incorrect. Removing pieces shrinks a mountain." }
+  ]
+},
+{
+  question: "What begins with T, ends with T, and has T in it?",
+  options: [
+    { text: "A teapot", correct: true },
+    { text: "A tent", correct: false, feedback: "Incorrect. Only begins with T." },
+    { text: "A tablet", correct: false, feedback: "Incorrect. Doesn't end with T." },
+    { text: "A ticket", correct: false, feedback: "Incorrect. Also doesn’t contain T in the middle." }
+  ]
+},
+{
+    question: "What can you put in a bucket to make it lighter?",
+    "options": [
+      { "text": "A hole", "correct": true },
+      { "text": "A flashlight", "correct": false, "feedback": "Incorrect. That only lights it up, not lightens it." },
+      { "text": "A balloon", "correct": false, "feedback": "Incorrect. Balloons don’t make buckets lighter." },
+      { "text": "A feather", "correct": false, "feedback": "Incorrect. Feathers are light but don’t change bucket weight." }
+    ]
+  },
+  {
+    question: "What kind of cup can’t hold water?",
+    "options": [
+      { "text": "A hiccup", "correct": true },
+      { "text": "A plastic cup", "correct": false, "feedback": "Incorrect. That holds water fine." },
+      { "text": "A teacup", "correct": false, "feedback": "Incorrect. Teacups hold liquid." },
+      { "text": "A paper cup", "correct": false, "feedback": "Incorrect. It holds water for a bit!" }
+    ]
+  },
+  { 
+    question: "What gets sharper the more you use it?",
+    "options": [
+      { "text": "Your brain", "correct": true },
+      { "text": "A knife", "correct": false, "feedback": "Incorrect. Knives get dull with use." },
+      { "text": "A pencil", "correct": false, "feedback": "Incorrect. Pencils get shorter and duller." },
+      { "text": "A saw", "correct": false, "feedback": "Incorrect. Saws also get dull over time." }
+    ]
+  },
+  {
+    question: "What has a mouth but never eats?",
+    "options": [
+      { "text": "A river", "correct": true },
+      { "text": "A dog bowl", "correct": false, "feedback": "Incorrect. Bowls don’t have mouths." },
+      { "text": "A cave", "correct": false, "feedback": "Incorrect. Caves have mouths but not this answer." },
+      { "text": "A mask", "correct": false, "feedback": "Incorrect. Masks have mouths drawn, not real ones." }
+     
+    ]
+  },
+  {
+    question: "What can you hear but not see or touch?",
+    "options": [
+      { "text": "Your voice", "correct": true },
+      { "text": "A cloud", "correct": false, "feedback": "Incorrect. Clouds can be seen." },
+      { "text": "A feather", "correct": false, "feedback": "Incorrect. Feathers can be touched." },
+      { "text": "The wind", "correct": false, "feedback": "Incorrect. You can hear wind, but the classic answer is voice." }
+    ]
+  },
+  {
+    question: "What has roots that nobody sees and is taller than trees?",
+    "options": [
+      { "text": "A mountain", "correct": true },
+      { "text": "A turnip", "correct": false, "feedback": "Incorrect. Turnips have real roots underground." },
+      { "text": "A skyscraper", "correct": false, "feedback": "Incorrect. Skyscrapers have foundations, not roots." },
+      { "text": "A carrot", "correct": false, "feedback": "Incorrect. Carrots are small!" }
+    ]
+  },
+  {
+    question: "What has a spine but no bones?",
+    "options": [
+      { "text": "A book", "correct": true },
+      { "text": "A fish", "correct": false, "feedback": "Incorrect. Fish have real spines." },
+      { "text": "A robot", "correct": false, "feedback": "Incorrect. Robots may have frames, not spines." },
+      { "text": "A tree", "correct": false, "feedback": "Incorrect. Trees have trunks, not spines." }
+    ]
+  },
+  {
+    question: "What spends all day in a bed but never sleeps?",
+    "options": [
+      { "text": "A flower", "correct": true },
+      { "text": "A cat", "correct": false, "feedback": "Incorrect. Cats sleep A LOT." },
+      { "text": "A frog", "correct": false, "feedback": "Incorrect. Frogs don’t stay in beds." },
+      { "text": "A worm", "correct": false, "feedback": "Incorrect. Worms don’t have beds." }
+    ]
+  },
+  {
+    question: "What can fill a room but takes up no space?",
+    "options": [
+      { "text": "Light", "correct": true },
+      { "text": "Air", "correct": false, "feedback": "Incorrect. Air takes up space." },
+      { "text": "Water vapor", "correct": false, "feedback": "Incorrect. Vapor is still matter." },
+      { "text": "Confetti", "correct": false, "feedback": "Incorrect. Confetti definitely takes up space!" }
+    ]
+  },
+  {
+    question: "What has wings but can't fly?",
+    "options": [
+      { "text": "A penguin", "correct": false, "feedback": "Incorrect. Penguins have wings but the classic answer is a bicycle." },
+      { "text": "A bicycle", "correct": true },
+      { "text": "A chicken", "correct": false, "feedback": "Incorrect. Chickens can fly a little." },
+      { "text": "A statue", "correct": false, "feedback": "Incorrect. Statues don’t have wings usually." }
+    ]
+  },
+  {
+    question: "What goes through cities and fields but never moves?",
+    "options": [
+      { "text": "A road", "correct": true },
+      { "text": "A train", "correct": false, "feedback": "Incorrect. Trains move a lot." },
+      { "text": "A bird", "correct": false, "feedback": "Incorrect. Birds fly through fields." },
+      { "text": "A breeze", "correct": false, "feedback": "Incorrect. Breezes move constantly." }
+    ]
+  },
+  { 
+    question: "What has stripes and goes 'Moo'?",
+    "options": [
+      { "text": "A zebra pretending to be a cow", "correct": true },
+      { "text": "A tiger", "correct": false, "feedback": "Incorrect. Tigers roar, not moo." },
+      { "text": "A cow in pajamas", "correct": false, "feedback": "Incorrect. Funny, but not the riddle." },
+      { "text": "A skunk", "correct": false, "feedback": "Incorrect. Skunks don’t moo." }
+    ]
+  },
+  {
+    question: "What do you call a dinosaur wearing a cowboy hat?",
+    "options": [
+      { "text": "Tyranno-saurus Tex", "correct": true },
+      { "text": "A fancy fossil", "correct": false, "feedback": "Incorrect. Fossils don’t wear hats." },
+      { "text": "Cowboy-saurus", "correct": false, "feedback": "Incorrect. Fun but not the riddle." },
+      { "text": "Dino-rodeo", "correct": false, "feedback": "Incorrect. Creative guess!" }
+    ]
+  },
+  {
+    question: "Why couldn't the pony sing?",
+    "options": [
+      { "text": "Because it was a little hoarse", "correct": true },
+      { "text": "It forgot the lyrics", "correct": false, "feedback": "Incorrect. That’s not the joke." },
+      { "text": "It was too shy", "correct": false, "feedback": "Incorrect. Ponies can’t be shy about singing." },
+      { "text": "It was tired", "correct": false, "feedback": "Incorrect. Wrong punchline." }
+    ]
+  },
+  {
+    question: "Why was the belt tired?",
+    "options": [
+      { "text": "It cinched too much work", "correct": false, "feedback": "Incorrect. Not the classic pun." },
+      { "text": "It had a waist of time", "correct": true },
+      { "text": "It got stretched out", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It held up too much", "correct": false, "feedback": "Incorrect. Not the riddle." }
+    ]
+  },
+  {
+    question: "Why did the picture go to jail?",
+    "options": [
+      { "text": "Because it was framed", "correct": true },
+      { "text": "It broke the wall", "correct": false, "feedback": "Incorrect. Pictures don’t do that." },
+      { "text": "It lied", "correct": false, "feedback": "Incorrect. Pictures don’t talk." },
+      { "text": "It was crooked", "correct": false, "feedback": "Incorrect. That’s not the joke." }
+    ]
+  },
+  {
+    question: "Why don't fish do well in school?",
+    "options": [
+      { "text": "Because they are always swimming below sea level", "correct": true },
+      { "text": "They can’t write", "correct": false, "feedback": "Incorrect. True but not the pun!" },
+      { "text": "They’re too slippery", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "They forget homework", "correct": false, "feedback": "Incorrect. Fish don’t have homework." }
+    ]
+  },
+  {
+    question: "Why did the broom get promoted?",
+    "options": [
+      { "text": "It swept the competition", "correct": true },
+      { "text": "It worked hard", "correct": false, "feedback": "Incorrect. True, but not the joke." },
+      { "text": "It was tidy", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It impressed the mop", "correct": false, "feedback": "Incorrect. Funny, but not the riddle." }
+    ]
+  },
+  {
+    question: "Why don’t teddy bears ever order dessert?",
+    "options": [
+      { "text": "They’re already stuffed", "correct": true },
+      { "text": "They don’t have money", "correct": false, "feedback": "Incorrect. Bears don’t use money." },
+      { "text": "They’re on a diet", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "They fall asleep", "correct": false, "feedback": "Incorrect. Wrong punchline." }
+    ]
+  },
+  {
+    question: "Why couldn’t the pirate play cards?",
+    "options": [
+      { "text": "Because he was sitting on the deck", "correct": true },
+      { "text": "He lost the treasure", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "He only had gold coins", "correct": false, "feedback": "Incorrect. Not related to cards." },
+      { "text": "He wore an eyepatch", "correct": false, "feedback": "Incorrect. That doesn’t stop card playing." }
+    ]
+  },
+
+  {
+    question: "Why did the clock get in trouble at school?",
+    "options": [
+      { "text": "It tocked back to the teacher", "correct": true },
+      { "text": "It was slow", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It was loud", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "It was late", "correct": false, "feedback": "Incorrect. Not the pun." }
+    ]
+  },
+  {
+    question: "Why did the cookie cry?",
+    "options": [
+      { "text": "Because its mom was a wafer too long", "correct": true },
+      { "text": "It got dunked", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It was broken", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It was stale", "correct": false, "feedback": "Incorrect. Wrong answer." }
+    ]
+  },
+  {
+    question: "Why did the pencil cross the road?",
+    "options": [
+      { "text": "To get to the other side of the paper", "correct": true },
+      { "text": "It needed sharpening", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It followed the pen", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It rolled away", "correct": false, "feedback": "Incorrect. Wrong punchline." }
+    ]
+  },
+  {
+    question: "Why did the lightbulb fail school?",
+    "options": [
+      { "text": "It wasn’t too bright", "correct": true },
+      { "text": "It flickered too much", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It broke", "correct": false, "feedback": "Incorrect. Wrong punchline." },
+      { "text": "It didn’t shine", "correct": false, "feedback": "Incorrect. Not the riddle." }
+    ]
+  },
+  {
+    question: "Why did the orange stop?",
+    "options": [
+      { "text": "It ran out of juice", "correct": true },
+      { "text": "It was peeled", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It got squished", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "It was tired", "correct": false, "feedback": "Incorrect. Wrong answer." }
+    ]
+  },
+  {
+    question: "Why did the chicken cross the playground?",
+    "options": [
+      { "text": "To get to the other slide", "correct": true },
+      { "text": "To chase a ball", "correct": false, "feedback": "Incorrect. Not the pun." },
+      { "text": "To find friends", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "To get a snack", "correct": false, "feedback": "Incorrect. Not the punchline." }
+    ]
+  },
+  {
+    question: "Why did the robot go on vacation?",
+    "options": [
+      { "text": "It needed to recharge", "correct": true },
+      { "text": "It got rusty", "correct": false, "feedback": "Incorrect. Not the joke." },
+      { "text": "It glitched", "correct": false, "feedback": "Incorrect. Not the punchline." },
+      { "text": "It was bored", "correct": false, "feedback": "Incorrect. Robots don’t get bored!" }
+    ]
+  },
+  {
+    question: "What can travel around the world while staying in a corner?",
+    "options": [
+      { "text": "A stamp", "correct": true },
+      { "text": "A plane", "correct": false, "feedback": "Incorrect. Planes move freely." },
+      { "text": "A suitcase", "correct": false, "feedback": "Incorrect. Suitcases don’t stay in a corner." },
+      { "text": "A postcard", "correct": false, "feedback": "Incorrect. Postcards move with mail, but the pun is stamp." }
+    ]
+  },
+  {
+    question: "What has a face but no mouth?",
+    "options": [
+      { "text": "A clock", "correct": true },
+      { "text": "A baby doll", "correct": false, "feedback": "Incorrect. Dolls often have mouths." },
+      { "text": "A pancake", "correct": false, "feedback": "Incorrect. Pancakes have toppings, not faces!" },
+      { "text": "A robot", "correct": false, "feedback": "Incorrect. Robots usually have mouths or speakers." }
+    ]
+  },
+  {
+     
+    question: "What has ears but cannot hear?",
+    "options": [
+      { "text": "Corn", "correct": true },
+      { "text": "A bunny", "correct": false, "feedback": "Incorrect. Bunnies hear very well!" },
+      { "text": "A pillow", "correct": false, "feedback": "Incorrect. Pillows don’t have ears." },
+      { "text": "A snowman", "correct": false, "feedback": "Incorrect. Snowmen have no real ears." }
+    ]
+  },
+  {
+    question: "What can you catch but not throw?",
+    "options": [
+      { "text": "A cold", "correct": true },
+      { "text": "A baseball", "correct": false, "feedback": "Incorrect. You can throw baseballs easily!" },
+      { "text": "A frog", "correct": false, "feedback": "Incorrect. You can throw a frog, but… maybe don’t!" },
+      { "text": "A kite", "correct": false, "feedback": "Incorrect. Kites can be thrown or flown." }
+    ]
+  },
+  {   
+    question: "What room has no doors or windows?",
+    "options": [
+      { "text": "A mushroom", "correct": true },
+      { "text": "A bathroom", "correct": false, "feedback": "Incorrect. Bathrooms usually have both!" },
+      { "text": "A classroom", "correct": false, "feedback": "Incorrect. Classrooms definitely have doors." },
+      { "text": "A living room", "correct": false, "feedback": "Incorrect. Living rooms have plenty of windows." }
+    ]
+  },
+  {
+    question: "What comes down but never goes up?",
+    "options": [
+      { "text": "Rain", "correct": true },
+      { "text": "An elevator", "correct": false, "feedback": "Incorrect. Elevators go up too!" },
+      { "text": "A ball", "correct": false, "feedback": "Incorrect. Balls can be thrown up." },
+      { "text": "Smoke", "correct": false, "feedback": "Incorrect. Smoke rises, not comes down." }
+    ]
+  },
+  {
+    question: "What belongs to you but others use it more than you?",
+    "options": [
+      { "text": "Your name", "correct": true },
+      { "text": "Your phone", "correct": false, "feedback": "Incorrect. Phones are usually used by the owner." },
+      { "text": "Your shoes", "correct": false, "feedback": "Incorrect. Shoes are worn by you." },
+      { "text": "Your money", "correct": false, "feedback": "Incorrect. Others don’t usually use your money." }  
+     
+    ]
+  },
+  {
+    question: "What room has no doors or windows?",
+    "options": [
+      { "text": "A mushroom", "correct": true },
+      { "text": "A bathroom", "correct": false, "feedback": "Incorrect. Bathrooms usually have both!" },
+      { "text": "A classroom", "correct": false, "feedback": "Incorrect. Classrooms definitely have doors." },
+      { "text": "A living room", "correct": false, "feedback": "Incorrect. Living rooms have plenty of windows." }
+    ]
+  },
+  {
+     
+    question: "What can travel around the world while staying in a corner?",
+    "options": [
+      { "text": "A stamp", "correct": true },
+      { "text": "A plane", "correct": false, "feedback": "Incorrect. Planes move freely." },
+      { "text": "A suitcase", "correct": false, "feedback": "Incorrect. Suitcases don’t stay in a corner." },
+      { "text": "A postcard", "correct": false, "feedback": "Incorrect. Postcards move with mail, but the pun is stamp." }
+    
+    ]
+  }
+];
+ 
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = 0;
+        const optionLabels = ['A.', 'B.', 'C.', 'D.'];
+
+        function shuffleQuestions() {
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+        }
+
+        function loadQuestion() {
+            document.getElementById('restartBtn').style.display = 'none';
+            if (currentQuestionIndex >= questions.length) {
+                document.getElementById('question').innerText = "Quiz Finished!";
+                document.getElementById('options').innerHTML = "";
+                document.getElementById('feedback').innerHTML = "";
+                document.getElementById('score').innerText = `Score: ${score}/${answered}`;
+                document.getElementById('restartBtn').style.display = 'inline-block';
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            document.getElementById('question').innerText = q.question;
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = "";
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.innerText = opt.text;
+                btn.setAttribute('data-label', optionLabels[index]);
+                btn.onclick = () => checkAnswer(btn, opt.correct, q.options);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('feedback').innerHTML = "";
+            document.getElementById('score').innerText = `Score: ${score}/${answered}`;
+        }
+
+        function checkAnswer(selectedBtn, isCorrect, allOptions) {
+            const optionButtons = document.querySelectorAll('.option');
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            const cheerSound = document.getElementById('cheer-sound');
+            const wrongSound = document.getElementById('wrong-sound');
+
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                document.getElementById('feedback').innerText = "Excellent!";
+                score++;
+                cheerSound.play();
+            } else {
+                selectedBtn.classList.add('wrong');
+                document.getElementById('feedback').innerText = "Wrong!";
+                const correctOption = allOptions.find(opt => opt.correct);
+                optionButtons.forEach(btn => {
+                    if (btn.innerText === correctOption.text) {
+                        btn.classList.add('correct');
+                    }
+                });
+                wrongSound.play();
+            }
+
+            answered++;
+            document.getElementById('score').innerText = `Score: ${score}/${answered}`;
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 3000);
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            if (music.paused) music.play();
+            else music.pause();
+        }
+
+        function restartQuiz() {
+            score = 0;
+            answered = 0;
+            currentQuestionIndex = 0;
+            shuffleQuestions();
+            loadQuestion();
+        }
+
+        shuffleQuestions();
+        loadQuestion();
+    </script>
+</body>
+</html>
