@@ -1,2 +1,0 @@
- This is a funny kids riddles collected from internet.Enjoy
-chose the best answer and wait for the reult. It will automatically takes you to the next question. You can press the music icon to stop music. 
